@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os
 import json
@@ -28,6 +28,16 @@ def download(url, fhash, finalname):
   os.system("rm -f %s; ln -s %s %s" % (finalname, fn, finalname))
 
 if __name__ == "__main__":
-  #up = requests.get("https://raw.githubusercontent.com/commaai/eon-neos/master/update.json").json()
-  up = json.loads(open('/home/batman/openpilot/installer/updater/update.json').read())
+  try:
+    if os.getenv("CLEAN_USR") == "1":
+      ota_json_download_url = os.getenv("NEOS_BASE_FOR_USR")
+      print("Fetching NEOS base for /usr from system image")
+    else:
+      ota_json_download_url = os.getenv("NEOS_BASE_FOR_DASHCAM")
+      print("Fetching NEOS base for dashcam slipstream")
+    up = requests.get(ota_json_download_url).json()
+  except Exception:
+    print("Couldn't fetch current NEOS OTA image!")
+    raise
   download(up['ota_url'], up['ota_hash'], "ota-signed-latest.zip")
+  download(up['recovery_url'], up['recovery_hash'], "recovery.img")

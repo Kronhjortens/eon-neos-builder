@@ -5,10 +5,11 @@ ROOT=$DIR/../..
 TOOLS=$ROOT/tools
 
 cd $DIR
+source build_env.sh
 
 # install build tools
 if [[ -z "${SKIP_DEPS}" ]]; then
-    sudo apt-get install -y cpio openjdk-8-jdk git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip python bc android-tools-fsutils
+  source $DIR/install_deps.sh
 fi
 
 if [[ -z "${LIMIT_CORES}" ]]; then
@@ -20,7 +21,12 @@ fi
 # build mindroid
 mkdir -p $DIR/mindroid/system
 cd $DIR/mindroid/system
-$TOOLS/repo init -u https://github.com/commaai/android.git -b mindroid
+
+# By default, check out the "repeatable-build-mindroid" manifest with locked
+# hashes for each Comma-forked component. If doing active development, check
+# out "mindroid" instead, update the repeatable-build-mindroid manifest hashes
+# when finished, and update the commit hash here.
+$TOOLS/repo init -u https://github.com/commaai/android.git -b "repeatable-build-mindroid"
 $TOOLS/repo sync -c -j$JOBS
 
 export PATH=$PWD/bin:$PATH
